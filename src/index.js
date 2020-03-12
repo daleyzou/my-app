@@ -7,8 +7,8 @@ import './index.css';
 class Square extends React.Component {
     render() {
         return (
-            <button className="square">
-                {/* TODO */}
+            <button className="square" onClick={this.props.onClick}>
+                {this.props.value}
             </button>
         );
     }
@@ -16,15 +16,12 @@ class Square extends React.Component {
 
 class Board extends React.Component {
     renderSquare(i) {
-        return <Square />;
+        return <Square value={this.props.squares[i]} onClick={()=>this.props.onClick(i)} />;
     }
 
     render() {
-        const status = 'Next player: X';
-
         return (
             <div>
-                <div className="status">{status}</div>
                 <div className="board-row">
                     {this.renderSquare(0)}
                     {this.renderSquare(1)}
@@ -46,18 +43,65 @@ class Board extends React.Component {
 }
 
 class Game extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state={
+            history: [{squares: Array(9).fill(null)}],
+            stepLength: 0,
+            xStatus: true,
+        };
+    }
+
     render() {
+        const history = this.state.history;
+        const current = history[this.state.stepLength];
+        let info;
+        if (calculateWinner(current.squares)){
+            info = 'Winner is ' + (this.state.xStatus?'X':0);
+        }else {
+            info = 'Next is ' + (this.state.xStatus?'X':0);
+        }
+        const moves = history.map((value, index)=>{
+            const desc = index?'Go to #'+index:'Go to game start';
+            return(
+                <li key={index}>
+                    <button onClick={()=>this.goTo(index)}>{desc}</button>
+                </li>
+            );
+        });
         return (
             <div className="game">
                 <div className="game-board">
-                    <Board />
+                    <Board squares={current.squares} onClick={i=>this.handleClick(i)}/>
                 </div>
                 <div className="game-info">
-                    <div>{/* status */}</div>
-                    <ol>{/* TODO */}</ol>
+                    <div>{info}</div>
+                    <ol>{moves}</ol>
                 </div>
             </div>
         );
+    };
+
+    goTo(index) {
+        this.setState({
+            xStatus: (index%2)===0,
+            stepLength: index,
+        });
+    }
+
+    handleClick(i) {
+        const history = this.state.history.slice(0, this.state.stepLength+1);
+        const current = history[history.length-1];
+        const squares = current.squares.slice();
+        if (calculateWinner(squares) || squares[i]){
+            return;
+        }
+        squares[i] = this.state.xStatus?'X':'0';
+        this.setState({
+            history: history.concat([{squares: squares}]),
+            xStatus: !this.state.xStatus,
+            stepLength: history.length,
+        });
     }
 }
 
