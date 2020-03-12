@@ -7,16 +7,30 @@ import './index.css';
 class Square extends React.Component {
     render() {
         return (
-            <button className="square">
-                {/* TODO */}
+            <button className="square" onClick={this.props.onClick}>
+                {this.props.value}
             </button>
         );
     }
 }
 
+
 class Board extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state={
+            xIs: true,
+            currMsg: null,
+            squares: Array(9).fill(null),
+        }
+    };
+
+
+
     renderSquare(i) {
-        return <Square />;
+        let squares = this.state.squares.slice();
+        squares[i] = this.state.xIs?'X':'0';
+        return <Square value={this.state.squares[i]} onClick={()=>this.handleClick(i, squares)} />;
     }
 
     render() {
@@ -42,6 +56,10 @@ class Board extends React.Component {
                 </div>
             </div>
         );
+    }
+
+    handleClick(i, squares) {
+        this.setState({squares: squares, xIs: !this.state.xIs})
     }
 }
 
